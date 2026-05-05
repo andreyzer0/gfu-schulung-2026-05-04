@@ -4,24 +4,31 @@ namespace App\Models;
 
 use App\Enums\EventType;
 use App\Traits\HasDuration;
+use Carbon\Carbon;
+use Database\Factories\EventFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
 
 /**
  * @property EventType $type
  * @property Carbon $start_date
  * @property Carbon $end_date
- * @property Trainer $trainer //?
+ * @property-read Trainer|null $trainer
  */
-
 class Event extends Model
 {
-    use HasDuration{
+    use HasDuration {
         getDurationInDays as traitGetDurationInDays;
     }
-    use softDeletes;
+
+    /** @use HasFactory<EventFactory> */
+    use HasFactory;
+
+    use SoftDeletes;
+
+    const string RELATION_TRAINER = 'trainer';
 
     protected $fillable = [
         'title',
@@ -30,19 +37,20 @@ class Event extends Model
         'start_date',
         'end_date',
         'location',
-
     ];
+
     protected $casts = [
         'type' => EventType::class,
         'start_date' => 'datetime',
         'end_date' => 'datetime',
     ];
+
     public function getDurationInDays(): int
     {
         return $this->traitGetDurationInDays() + 1;
     }
 
-    public function trainer(): belongsTo
+    public function trainer(): BelongsTo
     {
         return $this->belongsTo(Trainer::class);
     }
