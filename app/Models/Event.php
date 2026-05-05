@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\EventType;
 use App\Traits\HasDuration;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -12,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property EventType $type
  * @property Carbon $start_date
  * @property Carbon $end_date
+ * @property Trainer $trainer //?
  */
 
 class Event extends Model
@@ -38,5 +40,10 @@ class Event extends Model
     public function getDurationInDays(): int
     {
         return $this->traitGetDurationInDays() + 1;
+    }
+
+    public function trainer(): belongsTo
+    {
+        return $this->belongsTo(Trainer::class);
     }
 }
