@@ -11,16 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('tags', function (Blueprint $table) {
             $table->id();
-			$table->string('title');
-			$table->text('description');
-			$table->string('type')->default('onsite');
-			$table->datetime('start_date');
-			$table->datetime('end_date');
-			$table->string('location');
-            $table->softDeletes();
+            $table->string('name')->unique();
             $table->timestamps();
+        });
+
+        Schema::create('taggables', function (Blueprint $table) {
+            $table->foreignId('tag_id')
+                ->constrained()
+                ->onDelete('cascade');
+            $table->morphs('taggable');
         });
     }
 
@@ -29,6 +30,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('taggables');
+        Schema::dropIfExists('tags');
     }
 };
