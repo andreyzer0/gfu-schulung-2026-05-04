@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EventType;
 use App\Http\Requests\CreateEventRequest;
+use App\Http\Requests\EditEventRequest;
 use App\Models\Event;
 use App\Models\Trainer;
 use Illuminate\View\View;
@@ -22,10 +23,7 @@ class EventController extends Controller
 
     public function create(): View
     {
-        return view('events.form', [
-            'trainers' => Trainer::all(),
-            'types' => EventType::cases(),
-        ]);
+        return $this->form();
     }
 
     public function store(CreateEventRequest $request)
@@ -42,5 +40,35 @@ class EventController extends Controller
         }
 
         return $redirection->with('error', 'Unable to create event.');
+    }
+
+    public function edit(Event $event): View
+    {
+        return $this->form([
+            'event' => $event,
+        ]);
+    }
+
+    private function form(array $data = []): View
+    {
+        return view('events.form', array_merge([
+            'trainers' => Trainer::all(),
+            'types' => EventType::cases(),
+        ], $data));
+    }
+
+    public function save(Event $event, EditEventRequest $request)
+    {
+        $data = $request->validated();
+
+        $event->fill($data);
+
+        $redirection = redirect()->route('events.index');
+
+        if ($event->save()) {
+            return $redirection->with('success', 'Event updated successfully.');
+        }
+
+        return $redirection->with('error', 'Unable to update event.');
     }
 }
