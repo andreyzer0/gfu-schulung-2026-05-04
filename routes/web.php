@@ -20,3 +20,5 @@ Route::get('/events/edit/{event}', [EventController::class, 'edit'])
     ->name('events.edit');
 Route::post('/events/{event}', [EventController::class, 'save'])
     ->name('events.save');
+Route::get('/events/remove/{event}', [EventController::class, 'remove'])
+    ->name('events.remove');

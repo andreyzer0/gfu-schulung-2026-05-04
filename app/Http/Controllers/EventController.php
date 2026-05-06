@@ -7,6 +7,7 @@ use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\EditEventRequest;
 use App\Models\Event;
 use App\Models\Trainer;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class EventController extends Controller
@@ -70,5 +71,18 @@ class EventController extends Controller
         }
 
         return $redirection->with('error', 'Unable to update event.');
+    }
+
+    public function remove(Event $event): RedirectResponse
+    {
+        $redirection = redirect()->route('events.index');
+
+        if ($event->delete()) {
+            $redirection->with('success', __('Event ":event" removed successfully.', ['event' => $event->title]));
+        } else {
+            $redirection->with('error', __('Unable to remove event ":event".', ['event' => $event->title]));
+        }
+
+        return $redirection;
     }
 }
