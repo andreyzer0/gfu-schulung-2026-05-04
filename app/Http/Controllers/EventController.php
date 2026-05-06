@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Enums\EventType;
+use App\Exceptions\UnableToCreateEventException;
 use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\EditEventRequest;
+use App\Interfaces\Services\EventServiceInterface;
 use App\Models\Event;
 use App\Models\Trainer;
 use Illuminate\Http\RedirectResponse;
@@ -12,9 +14,13 @@ use Illuminate\View\View;
 
 class EventController extends Controller
 {
+    public function __construct(
+        protected EventServiceInterface $service,
+    ) {}
+
     public function index(): View
     {
-        $events = Event::query()->with(Event::RELATION_TRAINER)->get();
+        $events = $this->service->getEvents();
 
         return view('events.index', [
             'title' => 'GFU Training Schedule',
@@ -31,16 +37,16 @@ class EventController extends Controller
     {
         $data = $request->validated();
 
-        $event = new Event();
-        $event->fill($data);
-
         $redirection = redirect()->route('events.index');
 
-        if ($event->save()) {
-            return $redirection->with('success', 'Event created successfully.');
+        try {
+            $event = $this->service->createEvent($data);
+        } catch (UnableToCreateEventException $e) {
+            return $redirection->with('error', __('Unable to create event.'));
         }
 
-        return $redirection->with('error', 'Unable to create event.');
+        return $redirection->with('success', __('Event created successfully.', ['event' => $event]));
+
     }
 
     public function edit(Event $event): View
@@ -67,10 +73,10 @@ class EventController extends Controller
         $redirection = redirect()->route('events.index');
 
         if ($event->save()) {
-            return $redirection->with('success', 'Event updated successfully.');
+            return $redirection->with('success', __('Event ":event" updated successfully.', ['event' => $event]));
         }
 
-        return $redirection->with('error', 'Unable to update event.');
+        return $redirection->with('error', __('Unable to update event ":event".', ['event' => $event]));
     }
 
     public function remove(Event $event): RedirectResponse
@@ -78,9 +84,9 @@ class EventController extends Controller
         $redirection = redirect()->route('events.index');
 
         if ($event->delete()) {
-            $redirection->with('success', __('Event ":event" removed successfully.', ['event' => $event->title]));
+            $redirection->with('success', __('Event ":event" removed successfully.', ['event' => $event]));
         } else {
-            $redirection->with('error', __('Unable to remove event ":event".', ['event' => $event->title]));
+            $redirection->with('error', __('Unable to remove event ":event".', ['event' => $event]));
         }
 
         return $redirection;
