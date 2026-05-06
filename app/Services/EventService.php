@@ -12,10 +12,16 @@ class EventService implements EventServiceInterface
 {
     public function getEvents(): Collection
     {
-        //return Event::query()->with(Event::RELATION_TRAINER)->get();
+        return Event::query()
+            ->with(Event::RELATION_TRAINER)
+            ->with(Event::RELATION_TAGS)
+            ->get();
         //return Event::upcoming()->with(Event::RELATION_TRAINER)->get();
         $trainer = Trainer::find(2);
-        return Event::fromTrainer($trainer)->with(Event::RELATION_TRAINER)->get();
+        return Event::fromTrainer($trainer)
+            ->with(Event::RELATION_TRAINER)
+            ->with(Event::RELATION_TAGS)
+            ->get();
         //return Event::upcoming()->fromTrainer($trainer)->with(Event::RELATION_TRAINER)->get();
     }
 
@@ -30,6 +36,8 @@ class EventService implements EventServiceInterface
         if ( ! $event->save()) {
             throw new UnableToCreateEventException();
         }
+
+        $event->tags()->attach($data['tags']);
 
         // @TODO send mail to Trainer
 
