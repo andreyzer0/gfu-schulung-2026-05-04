@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
+#[\Attribute]
 class NoWeekends implements ValidationRule
 {
     /**
